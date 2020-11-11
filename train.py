@@ -5,6 +5,7 @@ import numpy as np
 import os
 import time
 import argparse
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', help='Session name', type=str, default='first')
@@ -28,19 +29,16 @@ parser.add_argument('--save_every',
                     type=int,
                     default=1000)
 parser.add_argument('--save_dir', help='save dir', type=str, default='save/')
+parser.add_argument('--continue_train',
+                    help='Continnue session name training?', type=bool, default=False)
 args = parser.parse_args()
 
-print(args)
 # convert names to numpy array
 names, name_probs, c_to_n_vocab, n_to_c_vocab, sos_idx, eos_idx = load_data(
     args.prop_file)
 
 SOS = n_to_c_vocab[sos_idx]
 EOS = n_to_c_vocab[eos_idx]
-
-# make save_dir
-if not os.path.isdir(args.save_dir):
-    os.mkdir(args.save_dir)
 
 # divide data into training and test set
 num_train_data = int(len(names) * 0.75)
@@ -49,6 +47,28 @@ num_test_data = len(names) - num_train_data
 model = VAE(len(c_to_n_vocab), args)
 print('Number of parameters : ',
       np.sum([np.prod(v.shape) for v in tf.trainable_variables()]))
+
+if args.continue_train:
+    json_file = json.load(open(f'json/{args.name}.json', 'r'))
+    t_args = argparse.Namespace()
+    t_args.__dict__.update(json_file)
+    args = parser.parse_args(namespace=t_args)
+
+    model.restore(f'{args.save_dir}/{args.name}.ckpt')
+else:
+    args.vocab = c_to_n_vocab
+    args.sos_idx = sos_idx
+    args.eos_idx = eos_idx
+
+    # make save_dir
+    if not os.path.isdir(args.save_dir):
+        os.mkdir(args.save_dir)
+
+    if not path.exists('json'):
+        os.mkdir('json')
+
+    with open(f'json/{args.name}.json', 'w') as f:
+        json.dump(vars(args), f)
 
 for epoch in range(args.num_epochs):
     train_loss = []
