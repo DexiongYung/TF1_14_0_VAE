@@ -40,10 +40,6 @@ names, name_probs, c_to_n_vocab, n_to_c_vocab, sos_idx, eos_idx = load_data(
 SOS = n_to_c_vocab[sos_idx]
 EOS = n_to_c_vocab[eos_idx]
 
-# divide data into training and test set
-num_train_data = int(len(names) * 0.75)
-num_test_data = len(names) - num_train_data
-
 model = VAE(len(c_to_n_vocab), args)
 print('Number of parameters : ',
       np.sum([np.prod(v.shape) for v in tf.trainable_variables()]))
@@ -69,6 +65,10 @@ else:
 
     with open(f'json/{args.name}.json', 'w') as f:
         json.dump(vars(args), f)
+
+# divide data into training and test set
+num_train_data = int(len(names) * 0.75)
+num_test_data = len(names) - num_train_data
 
 for epoch in range(args.num_epochs):
     train_loss = []
