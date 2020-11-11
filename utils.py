@@ -14,7 +14,7 @@ def load_data(n):
 
     SOS = '['
     EOS = ']'
-    chars = string.asci_letters + SOS + EOS
+    chars = string.ascii_letters + SOS + EOS
 
     vocab = dict(zip(chars, range(len(chars))))
 

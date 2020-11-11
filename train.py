@@ -77,7 +77,7 @@ for epoch in range(args.num_epochs):
 
         train_loss.append(cost)
 
-        if args.save_every % iteration == 0:
+        if iteration%args.save_every == 0:
             ckpt_path = args.save_dir+f'/{args.name}.ckpt'
             model.save(ckpt_path, epoch)
             plot_losses(train_loss, filename="train.png")
@@ -96,5 +96,5 @@ for epoch in range(args.num_epochs):
 
         test_loss.append(cost)
 
-        if args.save_every % iteration == 0:
+        if iteration % args.save_every == 0:
             plot_losses(train_loss, filename="test.png")
