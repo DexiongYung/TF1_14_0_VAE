@@ -7,6 +7,7 @@ import time
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--name', help='Session name', type=str, default='first')
 parser.add_argument('--batch_size', help='batch_size', type=int, default=128)
 parser.add_argument('--latent_size', help='latent_size', type=int, default=200)
 parser.add_argument(
@@ -18,6 +19,8 @@ parser.add_argument('--mean', help='mean of VAE', type=float, default=0.0)
 parser.add_argument('--stddev', help='stddev of VAE', type=float, default=1.0)
 parser.add_argument('--num_epochs', help='epochs', type=int, default=100)
 parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
+parser.add_argument(
+    '--save_every', help='Number of iterations before saying', type=int, default=1000)
 parser.add_argument(
     '--num_prop', help='number of propertoes', type=int, default=0)
 parser.add_argument('--save_dir', help='save dir', type=str, default='save/')
@@ -74,6 +77,11 @@ for epoch in range(args.num_epochs):
 
         train_loss.append(cost)
 
+        if args.save_every % iteration == 0:
+            ckpt_path = args.save_dir+f'/{args.name}.ckpt'
+            model.save(ckpt_path, epoch)
+            plot_losses(train_loss, filename="train.png")
+
     for iteration in range(len(test_names_input)//args.batch_size):
         n = np.random.randint(len(test_names_input), size=args.batch_size)
         x = np.array([test_names_input[i] for i in n])
@@ -88,23 +96,5 @@ for epoch in range(args.num_epochs):
 
         test_loss.append(cost)
 
-    train_loss = np.mean(np.array(train_loss))
-    test_loss = np.mean(np.array(test_loss))
-    end = time.time()
-    if epoch == 0:
-        print('epoch\ttrain_loss\ttest_loss\ttime (s)')
-    print("%s\t%.3f\t%.3f\t%.3f" % (epoch, train_loss, test_loss, end-st))
-    ckpt_path = args.save_dir+'/model_'+str(epoch)+'.ckpt'
-    model.save(ckpt_path, epoch)
-
-
-n = np.random.randint(len(test_names_input), size=args.batch_size)
-x = np.array([test_names_input[i] for i in n])
-y = np.array([test_names_output[i] for i in n])
-l = np.array([test_length[i] for i in n])
-c = np.array([[] for i in n])
-pred, cost = model.test(x, y, l, c)
-test_loss.append(cost)
-
-names_test = np.array([np.array(list(map(inv_vocab.get, s)))
-                       for s in pred.tolist()])
+        if args.save_every % iteration == 0:
+            plot_losses(train_loss, filename="test.png")

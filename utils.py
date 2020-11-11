@@ -1,7 +1,10 @@
 import collections
 import string
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import os
+from os import path
 
 
 def load_data(n):
@@ -24,3 +27,17 @@ def load_data(n):
                              for s in names_output])
     prop = np.array([] for i in range(len(names)))
     return names_input, names_output, chars, vocab, prop, length
+
+
+def plot_losses(losses, folder: str = "plot", filename: str = "checkpoint.png"):
+    if not path.exists(folder):
+        os.mkdir(folder)
+
+    x = list(range(len(losses)))
+    plt.plot(x, losses, 'b--', label="Unsupervised Loss")
+    plt.title("Loss Progression")
+    plt.xlabel("Batch")
+    plt.ylabel("Loss")
+    plt.legend(loc='upper left')
+    plt.savefig(f"{folder}/{filename}")
+    plt.close()
