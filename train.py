@@ -21,8 +21,6 @@ parser.add_argument('--num_epochs', help='epochs', type=int, default=100)
 parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
 parser.add_argument(
     '--save_every', help='Number of iterations before saying', type=int, default=1000)
-parser.add_argument(
-    '--num_prop', help='number of propertoes', type=int, default=0)
 parser.add_argument('--save_dir', help='save dir', type=str, default='save/')
 args = parser.parse_args()
 
