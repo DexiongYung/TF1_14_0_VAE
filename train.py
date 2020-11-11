@@ -2,10 +2,10 @@ from model import VAE
 from utils import *
 import tensorflow as tf
 import numpy as np
-import os
-import time
 import argparse
+import time
 import json
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', help='Session name', type=str, default='first')
