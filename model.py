@@ -5,11 +5,7 @@ import threading
 
 
 class VAE():
-    def __init__(self,
-                 vocab_size,
-                 args
-                 ):
-
+    def __init__(self, vocab_size, args):
         self.vocab_size = vocab_size
         self.batch_size = args.batch_size
         self.latent_size = args.latent_size
