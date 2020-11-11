@@ -68,7 +68,7 @@ for epoch in range(args.num_epochs):
         if iteration%args.save_every == 0:
             ckpt_path = args.save_dir+f'/{args.name}.ckpt'
             model.save(ckpt_path, epoch)
-            plot_losses(train_loss, filename="train.png")
+            plot_losses(train_loss, filename=f'{args.name}_train.png')
 
     for iteration in range(len(test_names_input)//args.batch_size):
         n = np.random.randint(len(test_names_input), size=args.batch_size)
@@ -84,4 +84,4 @@ for epoch in range(args.num_epochs):
         test_loss.append(cost)
 
         if iteration % args.save_every == 0:
-            plot_losses(train_loss, filename="test.png")
+            plot_losses(train_loss, filename=f'{args.name}_test.png')
