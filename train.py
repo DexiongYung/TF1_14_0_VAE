@@ -1,8 +1,8 @@
 from model import VAE
 from utils import *
+import tensorflow as tf
 import numpy as np
 import os
-import tensorflow as tf
 import time
 import argparse
 

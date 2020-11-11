@@ -47,11 +47,13 @@ class VAE():
             'eps': tf.random_normal([self.batch_size, self.latent_size], stddev=self.stddev, mean=self.mean)
         }
 
+        # Decoder linear layer
         self.weights['softmax'] = tf.get_variable("softmaxw", initializer=tf.random_uniform(
             shape=[decoded_rnn_size[-1], self.vocab_size], minval=-0.1, maxval=0.1))
-
         self.biases['softmax'] = tf.get_variable(
             "softmaxb", initializer=tf.zeros(shape=[self.vocab_size]))
+        
+        # Encoder linear layers
         self.weights['out_mean'] = tf.get_variable(
             "outmeanw", initializer=tf.contrib.layers.xavier_initializer(), shape=[self.unit_size, self.latent_size]),
         self.weights['out_log_sigma'] = tf.get_variable(
