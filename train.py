@@ -1,4 +1,4 @@
-from model import CVAE
+from model import VAE
 from utils import *
 import numpy as np
 import os
@@ -48,30 +48,20 @@ test_names_output = names_output[num_train_data:-1]
 train_length = length[0:num_train_data]
 test_length = length[num_train_data:-1]
 
-model = CVAE(vocab_size,
-             args
-             )
+model = VAE(vocab_size,args)
 print('Number of parameters : ', np.sum(
     [np.prod(v.shape) for v in tf.trainable_variables()]))
 
 for epoch in range(args.num_epochs):
-
-    st = time.time()
-    # Learning rate scheduling
-    #model.assign_lr(learning_rate * (decay_rate ** epoch))
     train_loss = []
     test_loss = []
-    st = time.time()
-
     for iteration in range(len(train_names_input)//args.batch_size):
         n = np.random.randint(len(train_names_input), size=args.batch_size)
         x = np.array([train_names_input[i] for i in n])
         y = np.array([train_names_output[i] for i in n])
         l = np.array([train_length[i] for i in n])
-        c = np.array([[] for i in n])
-
         try:
-            cost = model.train(x, y, l, c)
+            cost = model.train(x, y, l)
         except Exception as e:
             print(e)
 
@@ -87,10 +77,9 @@ for epoch in range(args.num_epochs):
         x = np.array([test_names_input[i] for i in n])
         y = np.array([test_names_output[i] for i in n])
         l = np.array([test_length[i] for i in n])
-        c = np.array([[] for i in n])
 
         try:
-            _, cost = model.test(x, y, l, c)
+            _, cost = model.test(x, y, l)
         except Exception as e:
             print(e)
 

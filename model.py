@@ -4,7 +4,7 @@ import numpy as np
 import threading
 
 
-class CVAE():
+class VAE():
     def __init__(self,
                  vocab_size,
                  args
@@ -14,7 +14,6 @@ class CVAE():
         self.batch_size = args.batch_size
         self.latent_size = args.latent_size
         self.lr = tf.Variable(args.lr, trainable=False)
-        self.num_prop = args.num_prop
         self.stddev = args.stddev
         self.mean = args.mean
         self.unit_size = args.unit_size
@@ -25,7 +24,6 @@ class CVAE():
     def _create_network(self):
         self.X = tf.placeholder(tf.int32, [self.batch_size, None])
         self.Y = tf.placeholder(tf.int32, [self.batch_size, None])
-        self.C = tf.placeholder(tf.float32, [self.batch_size, self.num_prop])
         self.L = tf.placeholder(tf.int32, [self.batch_size])
 
         decoded_rnn_size = [self.unit_size for i in range(self.n_rnn_layer)]
@@ -99,11 +97,8 @@ class CVAE():
 
     def encode(self):
         X = tf.nn.embedding_lookup(self.embedding_encode, self.X)
-        C = tf.expand_dims(self.C, 1)
-        C = tf.tile(C, [1, tf.shape(X)[1], 1])
-        inp = tf.concat([X, C], axis=-1)
         _, state = tf.nn.dynamic_rnn(
-            self.encoder, inp, dtype=tf.float32, scope='encode', sequence_length=self.L)
+            self.encoder, X, dtype=tf.float32, scope='encode', sequence_length=self.L)
         c, h = state[-1]
         self.weights['out_mean'] = tf.reshape(
             self.weights['out_mean'], [self.unit_size, -1])
@@ -118,10 +113,8 @@ class CVAE():
     def decode(self, Z):
         seq_length = tf.shape(self.X)[1]
         new_Z = tf.tile(tf.expand_dims(Z, 1), [1, seq_length, 1])
-        C = tf.expand_dims(self.C, 1)
-        C = tf.tile(C, [1, tf.shape(self.X)[1], 1])
         X = tf.nn.embedding_lookup(self.embedding_encode, self.X)
-        inputs = tf.concat([new_Z, X, C], axis=-1)
+        inputs = tf.concat([new_Z, X], axis=-1)
         self.initial_decoded_state = tuple([tf.contrib.rnn.LSTMStateTuple(tf.zeros(
             (self.batch_size, self.unit_size)), tf.zeros((self.batch_size, self.unit_size))) for i in range(3)])
         # self.initial_decoded_state=self.decoder.zero_state()
@@ -143,34 +136,34 @@ class CVAE():
     def restore(self, ckpt_path):
         self.saver.restore(self.sess, ckpt_path)
 
-    def get_latent_vector(self, x, c, l):
-        return self.sess.run(self.latent_vector, feed_dict={self.X: x, self.C: c, self.L: l})
+    def get_latent_vector(self, x, l):
+        return self.sess.run(self.latent_vector, feed_dict={self.X: x, self.L: l})
 
     def cal_latent_loss(self, mean, log_sigma):
         latent_loss = tf.reduce_mean(-0.5*(1+log_sigma -
                                            tf.square(mean)-tf.exp(log_sigma)))
         return latent_loss
 
-    def train(self, x, y, l, c):
+    def train(self, x, y, l):
         _, r_loss, l_loss = self.sess.run([self.opt, self.reconstr_loss, self.latent_loss], feed_dict={
-                                          self.X: x, self.Y: y, self.L: l, self.C: c})
+                                          self.X: x, self.Y: y, self.L: l})
         return r_loss + l_loss
 
-    def test(self, x, y, l, c):
+    def test(self, x, y, l):
         mol_pred, r_loss, l_loss = self.sess.run([self.mol_pred, self.reconstr_loss, self.latent_loss], feed_dict={
-                                                 self.X: x, self.Y: y, self.L: l, self.C: c})
+                                                 self.X: x, self.Y: y, self.L: l})
         return mol_pred, r_loss + l_loss
 
-    def sample(self, latent_vector, c, start_codon, seq_length):
+    def sample(self, latent_vector, start_codon, seq_length):
         l = np.ones((self.batch_size)).astype(np.int32)
         x = start_codon
         preds = []
         for i in range(seq_length):
             if i == 0:
                 x, state = self.sess.run([self.mol_pred, self.output_decoded_state], feed_dict={
-                                         self.X: x, self.latent_vector: latent_vector, self.L: l, self.C: c})
+                                         self.X: x, self.latent_vector: latent_vector, self.L: l})
             else:
                 x, state = self.sess.run([self.mol_pred, self.output_decoded_state], feed_dict={
-                                         self.X: x, self.latent_vector: latent_vector, self.L: l, self.C: c, self.initial_decoded_state: state})
+                                         self.X: x, self.latent_vector: latent_vector, self.L: l, self.initial_decoded_state: state})
             preds.append(x)
         return np.concatenate(preds, 1).astype(int).squeeze()
