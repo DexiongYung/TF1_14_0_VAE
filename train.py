@@ -19,7 +19,7 @@ parser.add_argument('--n_rnn_layer',
                     help='number of rnn layer',
                     type=int,
                     default=3)
-parser.add_argument('--prop_file', help='name of property file', type=str)
+parser.add_argument('--prop_file', help='name of property file', type=str, default='data/first.csv')
 parser.add_argument('--mean', help='mean of VAE', type=float, default=0.0)
 parser.add_argument('--stddev', help='stddev of VAE', type=float, default=1.0)
 parser.add_argument('--num_epochs', help='epochs', type=int, default=100)
@@ -30,7 +30,7 @@ parser.add_argument('--save_every',
                     default=1000)
 parser.add_argument('--save_dir', help='save dir', type=str, default='save/')
 parser.add_argument('--continue_train',
-                    help='Continnue session name training?', type=bool, default=False)
+                    help='Continue session name training?', type=bool, default=False)
 args = parser.parse_args()
 
 # convert names to numpy array
