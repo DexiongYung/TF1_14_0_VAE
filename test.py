@@ -1,58 +1,44 @@
-# -*- coding: future_fstrings -*-
-from model import CVAE
+from model import VAE
 from utils import *
 import numpy as np
 import os
+import json
 import tensorflow as tf
 import time
-import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--batch_size', help='batch_size', type=int, default=128)
-parser.add_argument('--latent_size', help='latent_size', type=int, default=200)
-parser.add_argument(
-    '--unit_size', help='unit_size of rnn cell', type=int, default=512)
-parser.add_argument(
-    '--n_rnn_layer', help='number of rnn layer', type=int, default=3)
-parser.add_argument('--prop_file', help='name of property file', type=str)
-parser.add_argument('--mean', help='mean of VAE', type=float, default=0.0)
-parser.add_argument('--stddev', help='stddev of VAE', type=float, default=1.0)
-parser.add_argument('--num_epochs', help='epochs', type=int, default=100)
-parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
-parser.add_argument(
-    '--num_prop', help='number of propertoes', type=int, default=0)
-parser.add_argument('--save_dir', help='save dir', type=str, default='save')
-args = parser.parse_args()
+class Dict2Obj(object):
+    """
+    Turns a dictionary into a class
+    """
+    def __init__(self, dictionary):
+        """Constructor"""
+        for key in dictionary:
+            setattr(self, key, dictionary[key])
+        
+NAME = 'first'
+json_file = json.load(open(f'json/{NAME}.json', 'r'))
+args = Dict2Obj(json_file)
 
-print(args)
+model = VAE(len(args.vocab), args)
+#model.restore(f'{args.save_dir}/{args.name}.ckpt')
+
 # convert names to numpy array
-names_input, names_output, char, vocab, labels, length = load_data(
+names, name_probs, c_to_n_vocab, n_to_c_vocab, sos_idx, eos_idx = load_data(
     args.prop_file)
-vocab_size = len(char)
-inv_vocab = {v: k for k, v in vocab.items()}
 
+SOS = n_to_c_vocab[sos_idx]
+EOS = n_to_c_vocab[eos_idx]
 
-# divide data into training and test set
-num_train_data = int(len(names_input)*0.75)
-train_names_input = names_input[0:num_train_data]
-test_names_input = names_input[num_train_data:-1]
+names_input, names_output, names_length = create_batch(names, name_probs, 128, c_to_n_vocab, SOS, EOS)
 
-train_names_output = names_output[0:num_train_data]
-test_names_output = names_output[num_train_data:-1]
+x = np.array(names_input)
+y = np.array(names_output)
+l = np.array(names_length)
+pred, cost = model.test(x, y, l)
 
-train_length = length[0:num_train_data]
-test_length = length[num_train_data:-1]
-
-model = CVAE(vocab_size, args)
-model.restore('save\model_24.ckpt-24')
-
-n = np.random.randint(len(test_names_input), size=args.batch_size)
-x = np.array([test_names_input[i] for i in n])
-y = np.array([test_names_output[i] for i in n])
-l = np.array([test_length[i] for i in n])
-c = np.array([[] for i in n])
-pred, cost = model.test(x, y, l, c)
-
-names_test = np.array([np.array(list(map(inv_vocab.get, s)))
-                       for s in pred.tolist()])
-print('blah')
+names_test = [list(map(n_to_c_vocab.get, s)) for s in pred.tolist()]
+names_input = [list(map(n_to_c_vocab.get, s)) for s in names_input]
+for i in range(len(names_test)):
+    name = names_test[i]
+    name = ''.join(name)
+    print(f'Original: {names_input[i]}, Recon: {name}')
