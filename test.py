@@ -41,4 +41,5 @@ names_input = [list(map(n_to_c_vocab.get, s)) for s in names_input]
 for i in range(len(names_test)):
     name = names_test[i]
     name = ''.join(name)
-    print(f'Original: {names_input[i]}, Recon: {name}')
+    original = ''.join(names_input[i])
+    print(f'Original: {original}, Recon: {name}')
