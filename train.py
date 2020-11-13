@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -12,7 +13,7 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', help='Session name', type=str, default='first')
-parser.add_argument('--batch_size', help='batch_size', type=int, default=1)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=128)
 parser.add_argument('--latent_size', help='latent_size', type=int, default=200)
 parser.add_argument('--unit_size',
                     help='unit_size of rnn cell',

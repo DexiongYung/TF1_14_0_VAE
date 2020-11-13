@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 from model import VAE
 from utils import *
 import numpy as np
@@ -14,7 +15,7 @@ class Dict2Obj(object):
         """Constructor"""
         for key in dictionary:
             setattr(self, key, dictionary[key])
-        
+
 NAME = 'first'
 json_file = json.load(open(f'json/{NAME}.json', 'r'))
 args = Dict2Obj(json_file)

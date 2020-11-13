@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 import matplotlib
 matplotlib.use('Agg')
 import collections
