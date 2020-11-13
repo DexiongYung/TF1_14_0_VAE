@@ -20,7 +20,7 @@ json_file = json.load(open(f'json/{NAME}.json', 'r'))
 args = Dict2Obj(json_file)
 
 model = VAE(len(args.vocab), args)
-#model.restore(f'{args.save_dir}/{args.name}.ckpt')
+model.restore(f'{args.save_dir}/{args.name}.ckpt')
 
 # convert names to numpy array
 names, name_probs, c_to_n_vocab, n_to_c_vocab, sos_idx, eos_idx = load_data(

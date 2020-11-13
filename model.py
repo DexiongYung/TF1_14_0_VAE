@@ -150,8 +150,8 @@ class VAE():
         Y = tf.nn.softmax(Y_logits)
         return Y, Y_logits
 
-    def save(self, ckpt_path, global_step):
-        self.saver.save(self.sess, ckpt_path, global_step=global_step)
+    def save(self, ckpt_path):
+        self.saver.save(self.sess, ckpt_path)
         #print("model saved to '%s'" % (ckpt_path))
 
     def assign_lr(self, learning_rate):

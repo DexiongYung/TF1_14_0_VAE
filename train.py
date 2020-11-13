@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -13,7 +12,7 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', help='Session name', type=str, default='first')
-parser.add_argument('--batch_size', help='batch_size', type=int, default=128)
+parser.add_argument('--batch_size', help='batch_size', type=int, default=1)
 parser.add_argument('--latent_size', help='latent_size', type=int, default=200)
 parser.add_argument('--unit_size',
                     help='unit_size of rnn cell',
@@ -90,15 +89,11 @@ for epoch in range(args.num_epochs):
         except Exception as e:
             print(e)
 
-        # Print Progress
-        if iteration%100 == 0:
-          print('Iteration Completion..{%d/%d}' % (iteration, num_train_data // args.batch_size))
-
         train_loss.append(cost)
 
         if iteration % args.save_every == 0:
             ckpt_path = args.save_dir + f'/{args.name}.ckpt'
-            model.save(ckpt_path, epoch)
+            model.save(ckpt_path)
             plot_losses(train_loss, filename=f'{args.name}_train.png')
 
     for iteration in range(num_test_data // args.batch_size):
